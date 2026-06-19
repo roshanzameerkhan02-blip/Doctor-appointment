@@ -1,0 +1,6 @@
+{
+  "name": "Doctor Connect Pakistan",
+  "description": "A professional Doctor Directory & Appointment Management Website for patients to find doctors, view profiles, and submit appointments, and for admins to manage doctors and patient requests.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
