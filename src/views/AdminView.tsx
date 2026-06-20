@@ -487,7 +487,13 @@ export default function AdminView({ doctors, refreshDoctors }: AdminViewProps) {
     const matchesCity = filterDocCity ? doc.city.toLowerCase().includes(filterDocCity.toLowerCase()) : true;
     
     const currentStatus = doc.status || 'Approved';
-    const matchesStatus = filterDocStatus ? currentStatus === filterDocStatus : true;
+    const matchesStatus = filterDocStatus 
+      ? (filterDocStatus === 'Pending' 
+          ? (currentStatus === 'Pending' || currentStatus === 'Pending Approval') 
+          : (filterDocStatus === 'Pending Approval' 
+              ? currentStatus === 'Pending Approval' 
+              : currentStatus === filterDocStatus))
+      : true;
     
     return matchesName && matchesHospital && matchesSpecialty && matchesCity && matchesStatus;
   });
@@ -1016,7 +1022,8 @@ export default function AdminView({ doctors, refreshDoctors }: AdminViewProps) {
               >
                 <option value="">All Statuses</option>
                 <option value="Approved">Approved</option>
-                <option value="Pending">Pending</option>
+                <option value="Pending">Pending (All Pending Approval)</option>
+                <option value="Pending Approval">Pending Approval Only</option>
                 <option value="Rejected">Rejected</option>
               </select>
             </div>
@@ -1102,13 +1109,14 @@ export default function AdminView({ doctors, refreshDoctors }: AdminViewProps) {
                               onChange={(e) => handleDocStatusChange(doc.id, e.target.value)}
                               className={`text-[9px] font-extrabold px-2 py-0.5 rounded border border-slate-200 focus:outline-none cursor-pointer ${
                                 currentStatus === 'Approved' ? 'bg-emerald-100 text-emerald-800' :
-                                currentStatus === 'Pending' ? 'bg-amber-100 text-amber-800' :
+                                currentStatus === 'Pending' || currentStatus === 'Pending Approval' ? 'bg-amber-100 text-amber-800' :
                                 'bg-rose-100 text-rose-800'
                               }`}
                               id={`status-doc-${doc.id}`}
                             >
                               <option value="Approved">Approved</option>
                               <option value="Pending">Pending</option>
+                              <option value="Pending Approval">Pending Approval</option>
                               <option value="Rejected">Rejected</option>
                             </select>
                           </div>
@@ -1720,6 +1728,7 @@ export default function AdminView({ doctors, refreshDoctors }: AdminViewProps) {
                   >
                     <option value="Approved">Approved</option>
                     <option value="Pending">Pending</option>
+                    <option value="Pending Approval">Pending Approval</option>
                     <option value="Rejected">Rejected</option>
                   </select>
                 </div>
@@ -1755,7 +1764,7 @@ export default function AdminView({ doctors, refreshDoctors }: AdminViewProps) {
               <div className="bg-slate-50 p-4 rounded-2xl space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="font-extrabold text-slate-600 block text-[10px] uppercase tracking-wide">Image Presentation Selection</span>
-                  <span className="text-[10px] text-slate-400">Pick preset avatar OR enter custom photo URL</span>
+                  <span className="text-[10px] text-slate-400">Pick preset avatar OR upload custom photo</span>
                 </div>
 
                 {/* Preset Picker */}
@@ -1779,17 +1788,37 @@ export default function AdminView({ doctors, refreshDoctors }: AdminViewProps) {
                   ))}
                 </div>
 
-                {/* Custom input URL */}
-                <div className="space-y-1">
-                  <label className="block text-[10px] uppercase font-bold text-slate-400 pl-1">Photo Link Address</label>
+                {/* Custom Image Upload */}
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide pl-1">Or Upload Custom Profile Picture</label>
                   <input
-                    type="url"
-                    placeholder="https://images.unsplash.com/your-custom-doctor-portrait"
-                    value={docImageUrl}
-                    onChange={(e) => setDocImageUrl(e.target.value)}
-                    className="w-full border border-slate-200 focus:border-emerald-550 rounded-xl px-3 py-2 text-[11px] font-mono"
-                    id="form-doc-image-url"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        if (file.size > 2 * 1024 * 1024) {
+                          alert('Please upload an image smaller than 2MB.');
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setDocImageUrl(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="w-full border border-slate-200 focus:border-emerald-555 rounded-xl px-3 py-1.8 text-xs bg-white text-slate-700 cursor-pointer focus:outline-none"
+                    id="form-doc-image-upload"
                   />
+                  
+                  {/* Upload Preview thumbnail */}
+                  {docImageUrl && !PRESET_AVATARS.some(p => p.url === docImageUrl) && (
+                    <div className="mt-2.5 flex items-center gap-3 bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm w-fit">
+                      <img src={docImageUrl} alt="Uploaded Preview" className="w-12 h-12 rounded-xl object-cover object-top border border-slate-200" />
+                      <span className="text-[11px] text-emerald-700 font-bold font-sans">✓ Custom picture uploaded successfully</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

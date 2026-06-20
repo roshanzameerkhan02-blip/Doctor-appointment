@@ -56,8 +56,8 @@ export function getDoctorAvatar(doc: { name?: string; id?: string; imageUrl?: st
     '/src/assets/images/doc_avatar_f2_1781893248533.jpg'
   ];
   
-  // If the imageUrl is already one of our local premium avatars, return it directly
-  if (doc.imageUrl && doc.imageUrl.includes('doc_avatar_')) {
+  // If the imageUrl is defined, return it directly (covers local presets, base64 uploads, and custom URLs)
+  if (doc.imageUrl && doc.imageUrl.trim() !== '') {
     return doc.imageUrl;
   }
   

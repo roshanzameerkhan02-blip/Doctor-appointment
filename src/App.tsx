@@ -156,7 +156,7 @@ export default function App() {
   const publicDoctors = doctors.filter((doc) => {
     // 1. Doctor individual status filter
     const docStatus = doc.status || 'Approved';
-    if (docStatus === 'Pending' || docStatus === 'Rejected') {
+    if (docStatus !== 'Approved') {
       return false;
     }
 
